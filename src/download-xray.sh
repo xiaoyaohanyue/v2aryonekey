@@ -25,17 +25,18 @@ _download_xray_file() {
         " && exit 1
 	fi
 
-	unzip -o $xray_tmp_file -d "/usr/bin/xray/"
-	chmod +x /usr/bin/xray/xray
-	if [[ ! $(cat /root/.bashrc | grep xray) ]]; then
-		echo "alias xray=$_v2ray_sh" >>/root/.bashrc
+	unzip -o $xray_tmp_file -d "/usr/bin/v2ray/"
+	mv /usr/bin/v2ray/xray /usr/bin/v2ray/v2ray
+	chmod +x /usr/bin/v2ray/v2ray
+	if [[ ! $(cat /root/.bashrc | grep v2ray) ]]; then
+		echo "alias v2ray=$_v2ray_sh" >>/root/.bashrc
 	fi
 }
 
 _install_xray_service() {
 	# cp -f "/usr/bin/xray/systemd/xray.service" "/lib/systemd/system/"
 	# sed -i "s/on-failure/always/" /lib/systemd/system/xray.service
-	cat >/lib/systemd/system/xray.service <<-EOF
+	cat >/lib/systemd/system/v2ray.service <<-EOF
 [Unit]
 Description=xray Service
 Documentation=https://www.xray.com/ https://www.v2fly.org/
@@ -54,14 +55,14 @@ Environment="XRAY_VMESS_AEAD_FORCED=false"
 #CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 #AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 NoNewPrivileges=true
-ExecStart=/usr/bin/env xray.vmess.aead.forced=false /usr/bin/xray/xray run -config /etc/xray/config.json
+ExecStart=/usr/bin/env xray.vmess.aead.forced=false /usr/bin/v2ray/xray run -config /etc/v2ray/config.json
 #Restart=on-failure
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
 EOF
-	systemctl enable xray
+	systemctl enable v2ray
 }
 
 _update_xray_version() {
@@ -71,7 +72,7 @@ _update_xray_version() {
 		echo -e " $green 咦...发现新版本耶....正在拼命更新.......$none"
 		echo
 		_download_xray_file
-		do_service restart xray
+		do_service restart v2ray
 		echo
 		echo -e " $green 更新成功啦...当前 xray 版本: ${cyan}$xray_latest_ver$none"
 		echo
@@ -85,6 +86,6 @@ _update_xray_version() {
 }
 
 _mkdir_dir() {
-	mkdir -p /var/log/xray
-	mkdir -p /etc/xray
+	mkdir -p /var/log/v2ray
+	mkdir -p /etc/v2ray
 }
