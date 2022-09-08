@@ -956,7 +956,6 @@ install() {
 	get_ip
 	config
 	show_config_info
-	v2ray url
 }
 uninstall() {
 
@@ -1030,6 +1029,7 @@ while :; do
 	case $choose in
 	1)
 		install
+		v2ray url
 		break
 		;;
 	2)
