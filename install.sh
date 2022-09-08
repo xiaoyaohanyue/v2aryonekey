@@ -822,6 +822,53 @@ install_v2ray() {
 	_install_v2ray_service
 	_mkdir_dir
 }
+install_xray() {
+	$cmd update -y
+	if [[ $cmd == "apt-get" ]]; then
+		$cmd install -y lrzsz git zip unzip curl wget qrencode libcap2-bin dbus
+	else
+		# $cmd install -y lrzsz git zip unzip curl wget qrencode libcap iptables-services
+		$cmd install -y lrzsz git zip unzip curl wget qrencode libcap
+	fi
+	ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+	[ -d /etc/v2ray ] && rm -rf /etc/v2ray
+	# date -s "$(curl -sI g.cn | grep Date | cut -d' ' -f3-6)Z"
+	_sys_timezone
+	_sys_time
+
+	if [[ $local_install ]]; then
+		if [[ ! -d $(pwd)/config ]]; then
+			echo
+			echo -e "$red 哎呀呀...安装失败了咯...$none"
+			echo
+			echo -e " 请确保你有完整的上传 233v2.com 的 xray 一键安装脚本 & 管理脚本到当前 ${green}$(pwd) $none目录下"
+			echo
+			exit 1
+		fi
+		mkdir -p /etc/v2ray/233boy/v2ray
+		cp -rf $(pwd)/* /etc/v2ray/233boy/v2ray
+	else
+		pushd /tmp
+		git clone https://github.com/xiaoyaohanyue/v2aryonekey.git /etc/v2ray/233boy/v2ray --depth=1
+		popd
+
+	fi
+
+	if [[ ! -d /etc/v2ray/233boy/v2ray ]]; then
+		echo
+		echo -e "$red 哎呀呀...克隆脚本仓库出错了...$none"
+		echo
+		echo -e " 温馨提示..... 请尝试自行安装 Git: ${green}$cmd install -y git $none 之后再安装此脚本"
+		echo
+		exit 1
+	fi
+
+	# download xray file then install
+	_load download-xray.sh
+	_download_xray_file
+	_install_xray_service
+	_mkdir_dir
+}
 
 config() {
 	cp -f /etc/v2ray/233boy/v2ray/config/backup.conf $backup
@@ -937,7 +984,11 @@ install() {
 	shadowsocks_config
 	install_info
 	# [[ $caddy ]] && domain_check
+	if [[ ${version_core} == "xray" ]];then
+	install_xray
+	else
 	install_v2ray
+	fi
 	if [[ $caddy || $v2ray_port == "80" ]]; then
 		if [[ $cmd == "yum" ]]; then
 			[[ $(pgrep "httpd") ]] && systemctl stop httpd
@@ -1013,22 +1064,31 @@ while :; do
 	echo
 	echo "........... V2Ray 一键安装脚本 & 管理脚本 changed by @xyhy919 .........."
 	echo
-	echo " 1. 安装"
+	echo " 1. 安装(xray)"
 	echo
-	echo " 2. 卸载"
+	echo " 2. 安装(v2ray)"
+	echo
+	echo " 3. 卸载"
 	echo
 	if [[ $local_install ]]; then
 		echo -e "$yellow 温馨提示.. 本地安装已启用 ..$none"
 		echo
 	fi
-	read -p "$(echo -e "请选择 [${magenta}1-2$none]:")" choose
+	read -p "$(echo -e "请选择 [${magenta}1-3$none]:")" choose
 	case $choose in
 	1)
+		version_core="xray"
 		install
 		v2ray url
 		break
 		;;
 	2)
+		version_core="v2ray"
+		install
+		v2ray url
+		break
+		;;
+	3)
 		uninstall
 		break
 		;;
