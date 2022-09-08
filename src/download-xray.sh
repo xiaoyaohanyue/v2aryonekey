@@ -17,7 +17,7 @@ _get_latest_version() {
 _download_xray_file() {
 	[[ ! $xray_latest_ver ]] && _get_latest_version
 	xray_tmp_file="/tmp/xray.zip"
-	xray_download_link="https://github.com/v2fly/xray-core/releases/download/$xray_latest_ver/xray-linux-${v2ray_bit}.zip"
+	xray_download_link="https://github.com/XTLS/Xray-core/releases/download/$xray_latest_ver/xray-linux-${v2ray_bit}.zip"
 
 	if ! wget --no-check-certificate -O "$xray_tmp_file" $xray_download_link; then
 		echo -e "
